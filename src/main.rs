@@ -3,7 +3,8 @@ use clap::{Parser, Subcommand};
 use qdrant_client::{
     Payload, Qdrant,
     qdrant::{
-        CreateCollectionBuilder, Distance, PointStruct, UpsertPointsBuilder, VectorParamsBuilder,
+        CreateCollectionBuilder, DeletePointsBuilder, Distance, PointId, PointStruct,
+        PointsIdsList, UpsertPointsBuilder, VectorParamsBuilder,
     },
 };
 
@@ -15,9 +16,15 @@ struct Args {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    UpsertPoint,
     CreateCollection,
+    DeletePoint {
+        /// The ID of the Qdrant point to delete
+        id: String,
+    },
+    UpsertPoint,
 }
+
+const COLLECTION_NAME: &str = "zhongwen";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -26,6 +33,9 @@ async fn main() -> anyhow::Result<()> {
     match args.command {
         Some(Commands::CreateCollection) => {
             create_collection().await?;
+        }
+        Some(Commands::DeletePoint { id }) => {
+            delete_point(id).await?;
         }
         Some(Commands::UpsertPoint) => {
             upsert_point().await?;
@@ -48,9 +58,8 @@ async fn create_collection() -> anyhow::Result<()> {
     let vector_size = 3;
     let vectors_config = VectorParamsBuilder::new(vector_size, Distance::Euclid);
 
-    let collection_name = "zhongwen";
     let create_collection_request =
-        CreateCollectionBuilder::new(collection_name).vectors_config(vectors_config);
+        CreateCollectionBuilder::new(COLLECTION_NAME).vectors_config(vectors_config);
 
     client.create_collection(create_collection_request).await?;
 
@@ -61,8 +70,6 @@ async fn create_collection() -> anyhow::Result<()> {
 async fn upsert_point() -> anyhow::Result<()> {
     let client = get_client().await?;
 
-    let collection_name = "zhongwen";
-
     let payload: Payload = serde_json::json!({
         "example": "在挫折面前，他从不灰心。",
     })
@@ -70,9 +77,27 @@ async fn upsert_point() -> anyhow::Result<()> {
 
     let points = vec![PointStruct::new(0, vec![0.1, 0.2, 0.3], payload)];
 
-    let upsert_points_request = UpsertPointsBuilder::new(collection_name, points);
+    let upsert_points_request = UpsertPointsBuilder::new(COLLECTION_NAME, points);
     client.upsert_points(upsert_points_request).await?;
 
     println!("Point upserted successfully");
+    Ok(())
+}
+
+async fn delete_point(id: String) -> anyhow::Result<()> {
+    let client = get_client().await?;
+
+    let id = match id.parse::<u64>() {
+        Ok(id) => PointId::from(id),
+        Err(_) => PointId::from(id),
+    };
+
+    let delete_point_request = DeletePointsBuilder::new(COLLECTION_NAME)
+        .points(PointsIdsList { ids: vec![id] })
+        .wait(true);
+
+    client.delete_points(delete_point_request).await?;
+
+    println!("Point deleted successfully");
     Ok(())
 }
