@@ -21,7 +21,7 @@
   },
   "rules": {
     "eslint/no-ternary": "off",
-    "eslint/sort-imports": ["error", { "allowSeparatedGroups": true }],
+    "eslint/sort-imports": "off",
     "eslint/sort-keys": "off",
     "import/no-default-export": "off",
     "node/no-process-env": ["error", { "allowedVariables": ["TAURI_DEV_HOST"] }],
