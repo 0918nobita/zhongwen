@@ -26,6 +26,7 @@
     "eslint-plugin-vue": "10.8.0",
     "globals": "17.3.0",
     "jiti": "2.6.1",
+    "oxfmt": "0.34.0",
     "oxlint": "1.49.0",
     "oxlint-tsgolint": "0.14.2",
     "typescript": "5.9.3",
