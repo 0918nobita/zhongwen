@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "import",
+    "node",
+    "oxc",
+    "promise",
+    "typescript",
+    "unicorn",
+    "vue"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "warn",
+    "perf": "error",
+    "style": "error",
+    "restriction": "error",
+    "nursery": "warn"
+  },
+  "rules": {
+    "eslint/no-ternary": "off",
+    "eslint/sort-imports": ["error", { "allowSeparatedGroups": true }],
+    "eslint/sort-keys": "off",
+    "import/no-default-export": "off",
+    "node/no-process-env": ["error", { "allowedVariables": ["TAURI_DEV_HOST"] }],
+    "oxc/no-async-await": "off",
+    "oxc/no-rest-spread-properties": "off",
+    "typescript/explicit-function-return-type": "off",
+    "unicorn/filename-case": ["error", { "ignore": "\\.vue$" }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "eslint.config.ts",
+        "vite.config.ts"
+      ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["src/vite-env.d.ts"],
+      "rules": {
+        "import/unambiguous": "off"
+      }
+    }
+  ]
+}
