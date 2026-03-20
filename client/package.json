@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint . --type-aware && eslint ."
+    "lint": "oxlint . --type-aware && eslint .",
+    "format": "oxfmt ."
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",
