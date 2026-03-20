@@ -11,6 +11,7 @@
     "nursery": "warn"
   },
   "rules": {
+    "eslint/no-console": "warn",
     "eslint/no-ternary": "off",
     "eslint/sort-imports": "off",
     "eslint/sort-keys": "off",
@@ -26,6 +27,12 @@
       "files": ["eslint.config.ts", "vite.config.ts"],
       "env": {
         "node": true
+      }
+    },
+    {
+      "files": ["src/**/*.ts", "src/**/*.vue"],
+      "env": {
+        "browser": true
       }
     },
     {

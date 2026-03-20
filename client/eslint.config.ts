@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import oxlint from 'eslint-plugin-oxlint';
 import vue from 'eslint-plugin-vue';
+import globals from 'globals';
 import ts from 'typescript-eslint';
 
 export default defineConfig(
@@ -19,6 +20,14 @@ export default defineConfig(
   },
   vue.configs['flat/recommended'],
   {
+    files: ['src/**/*.ts', 'src/**/*.vue'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ['src/**/*.vue'],
     languageOptions: {
       ecmaVersion: 'latest',
@@ -32,22 +41,22 @@ export default defineConfig(
       'vue/html-self-closing': [
         'error',
         {
-        html: {
-          void: 'always',
-          normal: 'always',
-          component: 'always',
-        },
+          html: {
+            void: 'always',
+            normal: 'always',
+            component: 'always',
+          },
         },
       ],
       'vue/max-attributes-per-line': [
         'error',
         {
-        singleline: 5,
-        multiline: 1,
+          singleline: 5,
+          multiline: 1,
         },
       ],
       'vue/singleline-html-element-content-newline': 'off',
     },
   },
-  ...oxlint.configs['flat/all'],
+  ...oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
 );
