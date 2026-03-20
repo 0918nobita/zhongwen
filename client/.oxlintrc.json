@@ -11,11 +11,23 @@
     "nursery": "warn"
   },
   "rules": {
+    "eslint/id-length": [
+      "error",
+      {
+        "exceptions": ["v"]
+      }
+    ],
     "eslint/no-console": "warn",
     "eslint/no-ternary": "off",
     "eslint/sort-imports": "off",
     "eslint/sort-keys": "off",
     "import/no-default-export": "off",
+    "import/no-namespace": [
+      "error",
+      {
+        "ignore": ["valibot"]
+      }
+    ],
     "node/no-process-env": ["error", { "allowedVariables": ["TAURI_DEV_HOST"] }],
     "oxc/no-async-await": "off",
     "oxc/no-rest-spread-properties": "off",

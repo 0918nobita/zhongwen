@@ -1,18 +1,28 @@
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api/core';
+import * as v from 'valibot';
 import { onMounted, ref } from 'vue';
 
-const greetMsg = ref('something');
+const GreetMsg = v.tuple([v.string(), v.string()]);
+
+const lines = ref<string[]>([]);
 
 onMounted(async () => {
-  greetMsg.value = await invoke('greet', { name: 'Example user' });
+  try {
+    const res = await invoke('greet', { name: 'Kodai' });
+    const parsed = v.parse(GreetMsg, res);
+    lines.value = parsed;
+  } catch {
+    lines.value = ['エラーが発生しました'];
+  }
 });
 </script>
 
 <template>
-  <main class="container">
-    <p>{{ greetMsg }}</p>
-  </main>
+  <p>
+    <template v-for="(line, index) in lines" :key="index">
+      <br v-if="index > 0" />
+      {{ line }}
+    </template>
+  </p>
 </template>
-
-<style scoped></style>

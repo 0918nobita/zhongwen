@@ -1,7 +1,10 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn greet(name: &str) -> Vec<String> {
+    vec![
+        format!("{}さん、こんにちは！", name),
+        "これは Rust 側からのメッセージです".to_owned(),
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
