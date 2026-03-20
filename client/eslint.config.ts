@@ -6,11 +6,7 @@ import ts from 'typescript-eslint';
 
 export default defineConfig(
   {
-    ignores: [
-      'dist',
-      'node_modules',
-      'src-tauri',
-    ],
+    ignores: ['dist', 'node_modules', 'src-tauri'],
   },
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
@@ -33,17 +29,23 @@ export default defineConfig(
       },
     },
     rules: {
-      'vue/html-self-closing': ['error', {
+      'vue/html-self-closing': [
+        'error',
+        {
         html: {
           void: 'always',
           normal: 'always',
           component: 'always',
         },
-      }],
-      'vue/max-attributes-per-line': ['error', {
+        },
+      ],
+      'vue/max-attributes-per-line': [
+        'error',
+        {
         singleline: 5,
         multiline: 1,
-      }],
+        },
+      ],
       'vue/singleline-html-element-content-newline': 'off',
     },
   },

@@ -1,15 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "eslint",
-    "import",
-    "node",
-    "oxc",
-    "promise",
-    "typescript",
-    "unicorn",
-    "vue"
-  ],
+  "plugins": ["eslint", "import", "node", "oxc", "promise", "typescript", "unicorn", "vue"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -32,10 +23,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "eslint.config.ts",
-        "vite.config.ts"
-      ],
+      "files": ["eslint.config.ts", "vite.config.ts"],
       "env": {
         "node": true
       }

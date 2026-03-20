@@ -7,8 +7,5 @@
     "allowSyntheticDefaultImports": true,
     "strict": true
   },
-  "include": [
-    "eslint.config.ts",
-    "vite.config.ts"
-  ]
+  "include": ["eslint.config.ts", "vite.config.ts"]
 }

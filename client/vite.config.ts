@@ -1,5 +1,5 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -13,19 +13,21 @@ export default defineConfig(() => ({
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
-    ...(typeof host === 'string' && host !== '' ? {
-      hmr: {
-        host,
-        port: 1421,
-        protocol: "ws",
-      },
-    } : {}),
+    ...(typeof host === 'string' && host !== ''
+      ? {
+          hmr: {
+            host,
+            port: 1421,
+            protocol: 'ws',
+          },
+        }
+      : {}),
     host,
     port: 1420,
     strictPort: true,
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
     },
   },
 }));
