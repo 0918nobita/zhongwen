@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('/fonts/NotoSansCJKsc-Regular.otf') format('opentype');
+}
+
 @layer reset, theme;
 
 @layer reset {
@@ -15,6 +20,10 @@
 
     font-family: system-ui, sans-serif;
     line-height: 1.6;
+  }
+
+  .py-chinese-item {
+    font-family: 'Noto Sans SC', system-ui, sans-serif;
   }
 }
 
