@@ -31,6 +31,12 @@
     "node/no-process-env": ["error", { "allowedVariables": ["TAURI_DEV_HOST"] }],
     "oxc/no-async-await": "off",
     "oxc/no-rest-spread-properties": "off",
+    "typescript/array-type": [
+      "error",
+      {
+        "default": "array-simple"
+      }
+    ],
     "typescript/explicit-function-return-type": "off",
     "unicorn/filename-case": ["error", { "ignore": "\\.vue$" }]
   },

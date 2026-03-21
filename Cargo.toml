@@ -8,4 +8,5 @@ anyhow = "1.0.102"
 clap = { version = "4.5.60", features = ["derive"] }
 qdrant-client = { version = "1.17.0", features = ["uuid"] }
 serde_json = "1.0.149"
+tauri-plugin-sql = { version = "2.3.2", features = ["sqlite"] }
 tokio = { version = "1.49.0", features = ["full"] }
