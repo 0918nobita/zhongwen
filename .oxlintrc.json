@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["eslint", "import", "node", "oxc", "promise", "typescript", "unicorn", "vue"],
+  "options": {
+    "typeAware": true
+  },
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -11,6 +14,7 @@
     "nursery": "warn"
   },
   "rules": {
+    "eslint/capitalized-comments": "off",
     "eslint/id-length": [
       "error",
       {
@@ -28,6 +32,7 @@
         "ignore": ["valibot"]
       }
     ],
+    "import/unambiguous": "off",
     "node/no-process-env": ["error", { "allowedVariables": ["TAURI_DEV_HOST"] }],
     "oxc/no-async-await": "off",
     "oxc/no-rest-spread-properties": "off",

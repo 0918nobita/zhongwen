@@ -1,11 +1,10 @@
-import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(() => ({
-  plugins: [tailwindcss(), vue()],
+  plugins: [vue()],
   clearScreen: false,
   // Tauri expects a fixed port, fail if that port is not available
   server: {
