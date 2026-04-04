@@ -43,3 +43,82 @@
 - **Composable 関数**: `@Composable` 関数の基本・再コンポーズの仕組み・`remember` による状態保持
 - **ViewModel + StateFlow**: MVVM の核心。UI ロジックをどこに置くか、状態をどう流すか
 - **Compose Navigation**: 画面遷移の定義方法と NavHost・NavController の役割
+
+---
+
+### 2026-04-04 再コンポーズ・remember・ViewModel・Navigation
+
+#### 再コンポーズと `remember`
+
+- `@Composable` 関数は「依存する State が変わるたびに再実行」される。これを **再コンポーズ (recomposition)** と呼ぶ
+- 再コンポーズ時、関数内のローカル変数は毎回初期化される（通常の関数呼び出しと同じ）
+- `remember { mutableStateOf(false) }` で囲んだ値は、再コンポーズをまたいでキャッシュされる
+  - `remember`: 初回コンポーズ時のみラムダを実行し、値をノードに紐づけて保持する
+  - `mutableStateOf(x)`: Compose が変更を観測できるコンテナ。値が変わると依存する Composable が再コンポーズされる
+  - `by` キーワード（委譲プロパティ）と組み合わせると `state.value` でなく `state` として直接アクセスできる
+
+```kotlin
+var flipped by remember { mutableStateOf(false) }
+// flipped = true にすると、このブロックが再コンポーズされる
+```
+
+- `animateFloatAsState` のようなアニメーション API も内部で `remember` + `State` を使っており、再コンポーズのループで少しずつ値を変化させることでアニメーションを実現している
+
+#### ViewModel と StateFlow
+
+| 役割 | クラス |
+|---|---|
+| UI の状態を保持・公開 | `ViewModel` |
+| 変化を Flow で流す | `StateFlow<T>` |
+| ViewModel 内部で書き換え | `MutableStateFlow<T>` |
+| UI に読み取り専用で公開 | `.asStateFlow()` |
+
+```kotlin
+// ViewModel 側
+private val _uiState = MutableStateFlow(WordListUiState(isLoading = true))
+val uiState: StateFlow<WordListUiState> = _uiState.asStateFlow()
+
+// Composable 側
+val uiState by vm.uiState.collectAsStateWithLifecycle()
+```
+
+- `collectAsStateWithLifecycle()`: `StateFlow` を Compose の `State` に変換する拡張関数。ライフサイクルを考慮し、画面が非表示（Stopped）のときは Flow の収集を停止してリソースを節約する
+- **UI State を data class にまとめる**のが Android の推奨パターン。フィールドが増えても ViewModel の公開 API が `uiState` 一本で済む
+
+#### Compose Navigation
+
+- `rememberNavController()`: `NavController` を `remember` で保持する。バックスタック（画面履歴）を管理する
+- `NavHost`: 現在の route に応じて表示する Composable を切り替える入れ物
+- `composable("route") { }`: route と Composable を対応付けるエントリ
+
+```kotlin
+// パスパラメータを使った画面遷移
+NavHost(navController, startDestination = "word_list") {
+    composable("word_list") { WordListScreen(...) }
+    composable("word_detail/{wordId}") { backStackEntry ->
+        val wordId = backStackEntry.arguments?.getString("wordId")?.toInt()
+        WordDetailScreen(wordId = wordId!!, ...)
+    }
+}
+
+// 遷移: navigate でルートを指定
+navController.navigate("word_detail/1")
+// 戻る: backStack を1つ pop する
+navController.popBackStack()
+```
+
+- Navigation の引数は文字列として渡り、`backStackEntry.arguments` で取得する。型安全にしたい場合は `navArgument` + `NavType` を使う（より大規模なアプリ向け）
+
+#### 今回作ったもの
+
+- `model/Word.kt` — データクラス + サンプルデータ
+- `viewmodel/WordListViewModel.kt` — StateFlow で単語リストを管理
+- `ui/screen/WordListScreen.kt` — LazyColumn で単語リスト表示
+- `ui/screen/WordDetailScreen.kt` — カードをタップで flip するアニメーション（`remember` + `animateFloatAsState` のデモ）
+- `MainActivity.kt` — NavHost で2画面のルーティングを定義
+
+#### 次回
+
+- **Repository パターン**: ViewModel からデータ取得ロジックを分離する
+- **Room データベース**: 単語データを端末に永続化する
+- **`LaunchedEffect` / `SideEffect`**: Composable の中で副作用（非同期処理など）を扱う方法
