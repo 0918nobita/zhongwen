@@ -173,3 +173,141 @@ Compose では LazyColumn や LazyRow が用意され、ViewHolder / Adapter を
 - Fragment の場合
   - ViewModel を持てるので、ViewModel に状態を持たせておけば回転後も保持される
   - `retainInstance` という、画面回転などの設定変更後も Fragment インスタンスを保持する機能もあったが、<br>内側の View が破棄されたのに Fragment インスタンスが破棄されていない状態を生み、<br>メモリリークやクラッシュの原因になりやすかったため API 28 で非推奨になった
+
+### 2026-04-04 Jetpack Compose レイアウト・状態管理
+
+#### 画面中央にテキストを表示する
+
+`Box` に `fillMaxSize()` と `contentAlignment = Alignment.Center` を組み合わせるのが最もシンプル
+
+```kotlin
+Box(
+    modifier = Modifier.fillMaxSize(),
+    contentAlignment = Alignment.Center
+) {
+    Text("Hello")
+}
+```
+
+複数のテキストを縦に並べて中央揃えにしたい場合は `Column` を使う
+
+```kotlin
+Column(
+    modifier = Modifier.fillMaxSize(),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
+    Text("1行目")
+    Text("2行目")
+}
+```
+
+#### レイアウトコンテナ
+
+`setContent {}` に複数の Composable を直接書くと、位置を管理するレイアウトがないため全要素が同じ座標（左上原点）に重なる。複数要素を並べるにはレイアウトコンテナで囲む必要がある
+
+| コンテナ | 並び方 | 旧来の View 相当 |
+|---|---|---|
+| `Column` | 縦 | `LinearLayout (vertical)` |
+| `Row` | 横 | `LinearLayout (horizontal)` |
+| `Box` | 重ねる | `FrameLayout` |
+
+#### Edge-to-Edge とシステムバーの余白
+
+Android 15 からデフォルトでコンテンツがステータスバーの背後まで描画される（Edge-to-Edge）。そのまま `Column` を置くとテキストがステータスバーに重なる
+
+`Scaffold` を使うと、システムバーの余白が `innerPadding`（型: `PaddingValues`）として渡されるため、コンテンツ側で `Modifier.padding(innerPadding)` を指定するだけで隠れなくなる
+
+```kotlin
+Scaffold(
+    topBar = { MyCustomTopBar() },
+    bottomBar = { MyCustomBottomBar() }
+) { innerPadding ->
+    // innerPadding = システムバー + TopBar + BottomBar の高さの合計
+    Column(modifier = Modifier.padding(innerPadding)) {
+        Text("コンテンツ")
+    }
+}
+```
+
+自前のバーは `Scaffold` の `topBar` / `bottomBar` 引数に渡す。コンテンツ内に置くと `innerPadding` に高さが反映されず余白計算がズレる
+
+#### Modifier の適用順序
+
+`Modifier` はチェーンした左から右の順番で適用される
+
+```kotlin
+// fillMaxSize → padding: 画面全体に広げてから内側に余白
+Modifier.fillMaxSize().padding(16.dp)
+
+// padding → fillMaxSize: 余白を除いた残りの領域を埋める
+Modifier.padding(16.dp).fillMaxSize()
+```
+
+`padding` は複数チェーンでき、後に書くほど内側に適用される
+
+#### `fillMaxSize` が必要なケース
+
+デフォルトのレイアウトは wrap content（コンテンツサイズに縮む）。`fillMaxSize` がないと親要素のサイズを埋めない
+
+- 中央揃えにしたいとき（`Arrangement.Center` などが効かない）
+- 背景色を画面全体に適用したいとき
+
+`Scaffold` 内では親が画面全体を占有するため省略できることが多い
+
+#### ViewModel と Composable の接続（StateFlow）
+
+```kotlin
+// ViewModel 側
+class MyViewModel : ViewModel() {
+    private val _count = MutableStateFlow(0)      // 内部で変更
+    val count: StateFlow<Int> = _count.asStateFlow() // 外部には読み取り専用で公開
+
+    fun increment() { _count.value++ }
+}
+
+// Composable 側
+@Composable
+fun CounterScreen(viewModel: MyViewModel = viewModel()) {
+    val count by viewModel.count.collectAsStateWithLifecycle()
+
+    Column {
+        Text("Count: $count")
+        Button(onClick = { viewModel.increment() }) { Text("増やす") }
+    }
+}
+```
+
+変更から再コンポーズまでの流れ
+
+```
+increment() 呼び出し
+  → MutableStateFlow の値が更新される
+  → StateFlow が新しい値を emit する
+  → collectAsStateWithLifecycle() が値を受け取り MutableState を更新する
+  → Compose の Snapshot システムが検知
+  → State を読んでいた Composable を無効化・再コンポーズ
+```
+
+`collectAsStateWithLifecycle` はライフサイクル対応（バックグラウンド時に停止）のため `collectAsState` より推奨。使用には `lifecycle-runtime-compose` への依存追加が必要
+
+#### `by` キーワードと Snapshot システム
+
+```kotlin
+val count by viewModel.count.collectAsStateWithLifecycle()
+// ↓ 展開すると
+val countState: State<Int> = viewModel.count.collectAsStateWithLifecycle()
+val count: Int get() = countState.value
+```
+
+`by`（プロパティ委譲）により `count` へのアクセスが `State.value` の読み取りに変換される。Composable 実行中に `State.value` を読むと Compose の **Snapshot システム**がその依存関係を登録し、値が変わったときに対象 Composable を再コンポーズする
+
+Web フロントエンドの Signal（Vue の `ref()`）や Computed と同じ「読んだら依存関係を登録する」という発想
+
+#### 再コンポーズのスキップ（Smart Recomposition）
+
+親が再コンポーズされると子も再実行されるが、**引数が前回と同じ値なら子はスキップされる**（React の `React.memo()` に相当）。React と異なり Compose はデフォルトでスキップ最適化が効く
+
+スキップの条件は引数の `equals()` 比較。`data class` は `equals()` が自動生成されるためスキップが効きやすい。通常クラスは参照比較になりスキップされないことがある
+
+`State` を読む場所が再コンポーズの範囲を決める。できるだけ末端の Composable で `collectAsStateWithLifecycle()` を呼ぶと、変更の影響範囲を狭められる
