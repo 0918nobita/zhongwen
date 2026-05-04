@@ -62,7 +62,7 @@ fun SwitchSample() {
 @Composable
 fun ComposableFunc(viewModel: PostViewModel = viewModel()) {
     var isVisible by remember { mutableStateOf(false) }
-    val post by viewModel.post.collectAsState()
+    val viewModelState by viewModel.state.collectAsState()
 
     val onClick = {
         isVisible = true
@@ -79,8 +79,11 @@ fun ComposableFunc(viewModel: PostViewModel = viewModel()) {
         if (isVisible) {
             Text("按钮被点击了")
         }
-        post?.let {
-            Text(it.title)
+        when (val state = viewModelState) {
+            is PostViewModelState.Initial -> Text("还没加载")
+            is PostViewModelState.Loading -> Text("全力加载中")
+            is PostViewModelState.Success -> Text(state.post.title)
+            is PostViewModelState.Failure -> Text("加载失败了")
         }
     }
 }
