@@ -13,6 +13,7 @@ ktor = "3.4.3"
 slf4j = "2.0.17"
 slf4jAndroid = "2.0.17-0"
 kotlinLogging = "8.0.02"
+kotlinxSerializationJson = "1.11.0"
 
 # 個別ライブラリの宣言
 # { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" } は
@@ -42,8 +43,10 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-android = { module = "uk.uuid.slf4j:slf4j-android", version.ref = "slf4jAndroid" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 # Gradle プラグインの宣言
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
