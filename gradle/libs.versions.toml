@@ -1,3 +1,4 @@
+# バージョン文字列の定義
 [versions]
 agp = "9.1.1"
 coreKtx = "1.18.0"
@@ -9,6 +10,11 @@ activityCompose = "1.13.0"
 kotlin = "2.3.21"
 composeBom = "2026.04.01"
 
+# 個別ライブラリの宣言
+# { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" } は
+# { module = "androidx.core:core-ktx", version.ref = "coreKtx" } と等価
+# Android アプリの依存解決では Maven リポジトリが使われており、
+# ライブラリは group, name, version の３要素をコロンで繋いだもので一意に識別される
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -25,6 +31,7 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+# Gradle プラグインの宣言
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
