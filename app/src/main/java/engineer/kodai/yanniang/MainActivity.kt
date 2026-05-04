@@ -13,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,22 +57,30 @@ fun SwitchSample() {
     Switch(checked = checked, onCheckedChange = { checked = !checked })
 }
 
+// viewModel() が返す ViewModel インスタンスは Activity の ViewModelStore で管理され、
+// 再コンポーズが発生しても同一のインスタンスが再利用される
 @Composable
-fun ComposableFunc() {
+fun ComposableFunc(viewModel: PostViewModel = viewModel()) {
     var isVisible by remember { mutableStateOf(false) }
+    val post by viewModel.post.collectAsState()
 
-    val viewModel: PostViewModel = viewModel()
     val onClick = {
         isVisible = true
+
         viewModel.fetchPost()
     }
 
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Button(onClick = onClick) {
             Text("按钮")
         }
         if (isVisible) {
             Text("按钮被点击了")
+        }
+        post?.let {
+            Text(it.title)
         }
     }
 }

@@ -289,7 +289,7 @@ increment() 呼び出し
   → State を読んでいた Composable を無効化・再コンポーズ
 ```
 
-`collectAsStateWithLifecycle` はライフサイクル対応（バックグラウンド時に停止）のため `collectAsState` より推奨。使用には `lifecycle-runtime-compose` への依存追加が必要
+`collectAsStateWithLifecycle` はライフサイクル対応（バックグラウンド時に停止）のため `collectAsState` より推奨。使用するには `lifecycle-runtime-compose` が必要
 
 #### `by` キーワードと Snapshot システム
 
@@ -311,3 +311,69 @@ Web フロントエンドの Signal（Vue の `ref()`）や Computed と同じ�
 スキップの条件は引数の `equals()` 比較。`data class` は `equals()` が自動生成されるためスキップが効きやすい。通常クラスは参照比較になりスキップされないことがある
 
 `State` を読む場所が再コンポーズの範囲を決める。できるだけ末端の Composable で `collectAsStateWithLifecycle()` を呼ぶと、変更の影響範囲を狭められる
+
+### 2026-05-04
+
+#### Ktor Client で Web API を叩く
+
+Ktor Client, Kotlin Logging, kotlinx-serialization-json を導入した
+
+`PostViewModel.kt` :
+
+```kotlin
+@Serializable
+data class Post(val userId: Int, val id: Int, val title: String, val body: String)
+
+private val logger = KotlinLogging.logger {}
+
+class PostViewModel : ViewModel() {
+  private val _post = MutableStateFlow<Post?>(null)
+  val post = _post.asStateFlow()
+
+  fun fetchPost() {
+    viewModelScope.launch(Dispatchers.IO) {
+      val resJson =
+        httpClient
+          .get("https://jsonplaceholder.typicode.com/posts/1")
+          .bodyAsText()
+
+      val res: Post = Json.decodeFromString(resJson)
+      logger.info { res }
+      _post.value = res
+    }
+  }
+}
+
+```
+
+`MainActivity.kt` :
+
+```kotlin
+// viewModel() が返す ViewModel インスタンスは Activity の ViewModelStore で管理され、
+// 再コンポーズが発生しても同一のインスタンスが再利用される
+@Composable
+fun ComposableFunc(viewModel: PostViewModel = viewModel()) {
+  var isVisible by remember { mutableStateOf(false) }
+  val post by viewModel.post.collectAsState()
+
+  val onClick = {
+    isVisible = true
+
+    viewModel.fetchPost()
+  }
+
+  Column(
+      horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Button(onClick = onClick) {
+      Text("按钮")
+    }
+    if (isVisible) {
+      Text("按钮被点击了")
+    }
+    post?.let {
+      Text(it.title)
+    }
+  }
+}
+```
