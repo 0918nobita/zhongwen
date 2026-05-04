@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,8 +60,14 @@ fun SwitchSample() {
 fun ComposableFunc() {
     var isVisible by remember { mutableStateOf(false) }
 
+    val viewModel: PostViewModel = viewModel()
+    val onClick = {
+        isVisible = true
+        viewModel.fetchPost()
+    }
+
     Column {
-        Button(onClick = { isVisible = true }) {
+        Button(onClick = onClick) {
             Text("按钮")
         }
         if (isVisible) {
