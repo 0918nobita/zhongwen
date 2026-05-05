@@ -29,6 +29,9 @@ class MainActivity : ComponentActivity() {
         // アプリの描画領域をシステムバー (ステータスバー・ナビゲーションバー) の背後まで拡張する
         enableEdgeToEdge()
 
+        val postRepository = PostRepositoryImpl(httpClient)
+        val factory = PostViewModel.Factory(postRepository)
+
         setContent {
             // Scaffold で innerPadding を得て上下 padding を設定しないと、
             // ステータスバーやナビゲーションバーと UI が重なってしまう
@@ -43,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     SwitchSample()
                     Text(text = "好久不见！")
-                    ComposableFunc()
+                    ComposableFunc(viewModel(factory = factory))
                 }
             }
         }
@@ -60,7 +63,7 @@ fun SwitchSample() {
 // viewModel() が返す ViewModel インスタンスは Activity の ViewModelStore で管理され、
 // 再コンポーズが発生しても同一のインスタンスが再利用される
 @Composable
-fun ComposableFunc(viewModel: PostViewModel = viewModel()) {
+fun ComposableFunc(viewModel: PostViewModel) {
     var isVisible by remember { mutableStateOf(false) }
     val viewModelState by viewModel.state.collectAsState()
 
